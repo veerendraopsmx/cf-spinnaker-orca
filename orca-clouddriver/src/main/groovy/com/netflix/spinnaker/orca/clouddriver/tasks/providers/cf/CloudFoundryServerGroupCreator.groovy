@@ -17,6 +17,7 @@
 package com.netflix.spinnaker.orca.clouddriver.tasks.providers.cf
 
 import com.netflix.spinnaker.orca.clouddriver.tasks.servergroup.ServerGroupCreator
+import com.netflix.spinnaker.orca.pipeline.model.JenkinsTrigger
 import com.netflix.spinnaker.orca.pipeline.model.Stage
 import groovy.util.logging.Slf4j
 import org.springframework.stereotype.Component
@@ -30,12 +31,37 @@ class CloudFoundryServerGroupCreator implements ServerGroupCreator {
 
   @Override
   List<Map> getOperations(Stage stage) {
-    def operation = [:]
-    operation.putAll(stage.context)
+    def operation = [
+      application: stage.context.application,
+      credentials: stage.context.account,
+      manifest: stage.context.manifest,
+    ]
 
-    if (stage.execution.hasProperty('trigger')) {
-      operation.trigger = stage.execution.trigger
-//      if(operation.triger instance )
+    stage.context.stack?.with { operation.stack = it }
+    stage.context.freeFormDetails?.with { operation.detail = it }
+
+    def artifact = stage.execution.context.artifact
+    switch(artifact.type) {
+      case 'trigger':
+        if(stage.execution.trigger instanceof JenkinsTrigger) {
+          JenkinsTrigger jenkins = stage.execution.trigger as JenkinsTrigger
+          def matchingArtifact = jenkins.buildInfo.artifacts.find { it.fileName ==~ artifact.pattern }
+
+          if(!matchingArtifact) {
+            throw new IllegalStateException("No Jenkins artifacts matched the pattern '$artifact.pattern'.")
+          }
+
+          operation.artifactSource = [
+            type: 'artifact',
+            account: artifact.account,
+            reference: jenkins.buildInfo.url + matchingArtifact.relativePath
+          ]
+        }
+        break
+      case 'artifact':
+      case 'droplet':
+        operation.artifactSource = artifact
+        break
     }
 
     return [[(OPERATION): operation]]
