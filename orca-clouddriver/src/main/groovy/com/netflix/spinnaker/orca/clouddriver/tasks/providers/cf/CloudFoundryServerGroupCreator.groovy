@@ -40,7 +40,7 @@ class CloudFoundryServerGroupCreator implements ServerGroupCreator {
     stage.context.stack?.with { operation.stack = it }
     stage.context.freeFormDetails?.with { operation.detail = it }
 
-    def artifact = stage.execution.context.artifact
+    def artifact = stage.context.artifact
     switch(artifact.type) {
       case 'trigger':
         if(stage.execution.trigger instanceof JenkinsTrigger) {
