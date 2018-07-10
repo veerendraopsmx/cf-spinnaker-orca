@@ -16,8 +16,8 @@
 
 package com.netflix.spinnaker.orca.clouddriver.tasks.providers.cf
 
-import com.netflix.spinnaker.orca.test.model.ExecutionBuilder
 import spock.lang.Specification
+
 import static com.netflix.spinnaker.orca.test.model.ExecutionBuilder.stage
 
 class CloudFoundryServerGroupCreatorSpec extends Specification {
@@ -25,9 +25,11 @@ class CloudFoundryServerGroupCreatorSpec extends Specification {
   def "should get operations"() {
     given:
     def ctx = [
+      application      : "abc",
       account          : "abc",
-      zone             : "north-pole-1",
+      spaceId          : "space-guid",
       deploymentDetails: [[imageId: "testImageId", zone: "north-pole-1"]],
+      artifact         : [type: "artifact", reference: "some-reference"],
     ]
     def stage = stage {
       context.putAll(ctx)
@@ -38,61 +40,20 @@ class CloudFoundryServerGroupCreatorSpec extends Specification {
 
     then:
     ops == [
-        [
-            "createServerGroup": [
-              account          : "abc",
-              credentials      : "abc",
-              image            : "testImageId",
-              zone             : "north-pole-1",
-              trigger          : stage.execution.trigger,
-              deploymentDetails: [[imageId: "testImageId", zone: "north-pole-1"]],
-            ],
-        ]
-    ]
-
-    when: "fallback to non-zone matching image"
-    ctx.zone = "south-pole-1"
-    stage = ExecutionBuilder.stage {
-      context.putAll(ctx)
-    }
-    ops = new CloudFoundryServerGroupCreator().getOperations(stage)
-
-    then:
-    ops == [
       [
         "createServerGroup": [
-          account          : "abc",
-          credentials      : "abc",
-          image            : "testImageId",
-          zone             : "south-pole-1",
-          trigger          : stage.execution.trigger,
-          deploymentDetails: [[imageId: "testImageId", zone: "north-pole-1"]],
+          application   : "abc",
+          credentials   : "abc",
+          manifest      : null,
+          spaceId       : "space-guid",
+          artifactSource: [
+            type     : "artifact",
+            reference: "some-reference"
+          ]
         ],
       ]
     ]
 
-    when: "throw error if >1 image"
-    ctx.deploymentDetails = [[imageId: "testImageId-1", zone: "east-pole-1"],
-                             [imageId: "testImageId-2", zone: "west-pole-1"]]
-    stage = ExecutionBuilder.stage {
-      context.putAll(ctx)
-    }
-    ops = new CloudFoundryServerGroupCreator().getOperations(stage)
-
-    then:
-    IllegalStateException ise = thrown()
-    ise.message.startsWith("Ambiguous choice of deployment images")
-
-    when: "throw error if no image found"
-    ctx.deploymentDetails = []
-    stage = ExecutionBuilder.stage {
-      context.putAll(ctx)
-    }
-    ops = new CloudFoundryServerGroupCreator().getOperations(stage)
-
-    then:
-    ise = thrown()
-    ise.message == "Neither an image nor a repository/artifact could be found in south-pole-1."
   }
 
 }
