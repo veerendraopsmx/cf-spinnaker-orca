@@ -55,7 +55,7 @@ class CloudFoundryServerGroupCreator implements ServerGroupCreator {
           operation.artifactSource = [
             type: 'artifact',
             account: artifact.account,
-            reference: jenkins.buildInfo.url + matchingArtifact.relativePath
+            reference: jenkins.buildInfo.url + 'artifact/' + matchingArtifact.relativePath
           ]
         }
         break
