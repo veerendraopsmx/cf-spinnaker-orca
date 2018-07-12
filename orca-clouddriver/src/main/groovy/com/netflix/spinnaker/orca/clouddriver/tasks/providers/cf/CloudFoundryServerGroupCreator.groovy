@@ -60,7 +60,7 @@ class CloudFoundryServerGroupCreator implements ServerGroupCreator {
         }
         break
       case 'artifact':
-      case 'droplet':
+      case 'package':
         operation.artifactSource = artifact
         break
     }
