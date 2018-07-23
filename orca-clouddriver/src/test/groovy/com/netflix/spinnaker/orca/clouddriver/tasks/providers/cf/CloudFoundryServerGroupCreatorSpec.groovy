@@ -27,7 +27,7 @@ class CloudFoundryServerGroupCreatorSpec extends Specification {
     def ctx = [
       application      : "abc",
       account          : "abc",
-      spaceId          : "space-guid",
+      region           : "org > space",
       deploymentDetails: [[imageId: "testImageId", zone: "north-pole-1"]],
       artifact         : [type: "artifact", reference: "some-reference"],
     ]
@@ -45,7 +45,7 @@ class CloudFoundryServerGroupCreatorSpec extends Specification {
           application   : "abc",
           credentials   : "abc",
           manifest      : null,
-          spaceId       : "space-guid",
+          region        : "org > space",
           artifactSource: [
             type     : "artifact",
             reference: "some-reference"
