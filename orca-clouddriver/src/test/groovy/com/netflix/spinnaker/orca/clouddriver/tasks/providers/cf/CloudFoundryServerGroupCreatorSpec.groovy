@@ -30,6 +30,7 @@ class CloudFoundryServerGroupCreatorSpec extends Specification {
       region           : "org > space",
       deploymentDetails: [[imageId: "testImageId", zone: "north-pole-1"]],
       artifact         : [type: "artifact", reference: "some-reference"],
+      startApplication : true,
     ]
     def stage = stage {
       context.putAll(ctx)
@@ -46,6 +47,7 @@ class CloudFoundryServerGroupCreatorSpec extends Specification {
           credentials   : "abc",
           manifest      : null,
           region        : "org > space",
+          startApplication: true,
           artifactSource: [
             type     : "artifact",
             reference: "some-reference"
