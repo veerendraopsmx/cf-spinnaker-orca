@@ -35,7 +35,8 @@ class CloudFoundryServerGroupCreator implements ServerGroupCreator {
       application: stage.context.application,
       credentials: stage.context.account,
       manifest: stage.context.manifest,
-      region: stage.context.region
+      region: stage.context.region,
+      startApplication: stage.context.startApplication
     ]
 
     stage.context.stack?.with { operation.stack = it }
