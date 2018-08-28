@@ -36,37 +36,38 @@ class CloudFoundryServerGroupCreator implements ServerGroupCreator {
       credentials: stage.context.account,
       manifest: stage.context.manifest,
       region: stage.context.region,
-      startApplication: stage.context.startApplication
+      startApplication: stage.context.startApplication,
+      artifactSource: stage.context.artifact
     ]
 
     stage.context.stack?.with { operation.stack = it }
     stage.context.freeFormDetails?.with { operation.detail = it }
 
-    def artifact = stage.context.artifact
-    switch(artifact.type) {
-      case 'trigger':
-        if(stage.execution.trigger instanceof JenkinsTrigger) {
-          JenkinsTrigger jenkins = stage.execution.trigger as JenkinsTrigger
-          def matchingArtifact = jenkins.buildInfo.artifacts.find { it.fileName ==~ artifact.pattern }
-
-          if(!matchingArtifact) {
-            throw new IllegalStateException("No Jenkins artifacts matched the pattern '$artifact.pattern'.")
-          }
-
-          operation.artifactSource = [
-            type: 'artifact',
-            account: artifact.account,
-            reference: jenkins.buildInfo.url + 'artifact/' + matchingArtifact.relativePath
-          ]
-        }
-        break
-      case 'artifact':
-      case 'package':
-        operation.artifactSource = artifact
-        break
+    if(stage.execution.trigger instanceof JenkinsTrigger) {
+      JenkinsTrigger jenkins = stage.execution.trigger as JenkinsTrigger
+      def artifact = stage.context.artifact
+      if(artifact.type == 'trigger') {
+        operation.artifactSource = getArtifactFromJenkinsTrigger(jenkins, artifact.account, artifact.pattern)
+      }
+      def manifest = stage.context.manifest
+      if(manifest.type == 'trigger') {
+        operation.manifest = getArtifactFromJenkinsTrigger(jenkins, manifest.account, manifest.pattern)
+      }
     }
 
     return [[(OPERATION): operation]]
+  }
+
+  private Map getArtifactFromJenkinsTrigger(JenkinsTrigger jenkinsTrigger, String account, String regex) {
+    def matchingArtifact = jenkinsTrigger.buildInfo.artifacts.find { it.fileName ==~ regex }
+    if(!matchingArtifact) {
+      throw new IllegalStateException("No Jenkins artifacts matched the pattern '${regex}'.")
+    }
+    return [
+      type: 'artifact',
+      account: account,
+      reference: jenkinsTrigger.buildInfo.url + 'artifact/' + matchingArtifact.relativePath
+    ]
   }
 
   @Override
