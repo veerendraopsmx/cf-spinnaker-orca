@@ -17,7 +17,7 @@
 package com.netflix.spinnaker.orca.clouddriver.pipeline.service;
 
 import com.netflix.spinnaker.orca.clouddriver.tasks.MonitorKatoTask;
-import com.netflix.spinnaker.orca.clouddriver.tasks.service.CreateServiceInstanceTask;
+import com.netflix.spinnaker.orca.clouddriver.tasks.service.DeployServiceTask;
 import com.netflix.spinnaker.orca.pipeline.StageDefinitionBuilder;
 import com.netflix.spinnaker.orca.pipeline.TaskNode;
 import com.netflix.spinnaker.orca.pipeline.model.Stage;
@@ -26,13 +26,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 @CompileStatic
-class CreateServiceInstanceStage implements StageDefinitionBuilder {
+class DeployServiceStage implements StageDefinitionBuilder {
 
   @Override
   public void taskGraph(Stage stage, TaskNode.Builder builder) {
     builder
-      .withTask("createServiceInstance", CreateServiceInstanceTask.class)
-      .withTask("monitorCreateServiceInstance", MonitorKatoTask.class);
+      .withTask("createService", DeployServiceTask.class)
+      .withTask("monitorCreateService", MonitorKatoTask.class);
   }
 }
 
