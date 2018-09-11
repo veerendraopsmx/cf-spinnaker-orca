@@ -31,8 +31,8 @@ class DeployServiceStage implements StageDefinitionBuilder {
   @Override
   public void taskGraph(Stage stage, TaskNode.Builder builder) {
     builder
-      .withTask("createService", DeployServiceTask.class)
-      .withTask("monitorCreateService", MonitorKatoTask.class);
+      .withTask("deployService", DeployServiceTask.class)
+      .withTask("monitorDeployService", MonitorKatoTask.class);
   }
 }
 

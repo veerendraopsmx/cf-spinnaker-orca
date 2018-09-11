@@ -40,11 +40,11 @@ public class DeployServiceTask extends AbstractCloudProviderAwareTask implements
     String cloudProvider = getCloudProvider(stage);
     String account = getCredentials(stage);
     Map<String, Map> operation = new ImmutableMap.Builder<String, Map>()
-      .put("createService", stage.getContext())
+      .put("deployService", stage.getContext())
       .build();
     TaskId taskId = kato.requestOperations(cloudProvider, Collections.singletonList(operation)).toBlocking().first();
     Map<String, Object> outputs = new ImmutableMap.Builder<String, Object>()
-      .put("notification.type", "createService")
+      .put("notification.type", "deployService")
       .put("kato.last.task.id", taskId)
       .put("service.region",  stage.getContext().get("region"))
       .put("service.account", account)
